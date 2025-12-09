@@ -1,0 +1,395 @@
+---
+title: "Types"
+description: "GraphQL type definitions for CorrData"
+---
+
+## Enums
+
+### AssetType
+
+```graphql
+enum AssetType {
+  PIPELINE
+  SEGMENT
+  TEST_STATION
+  RECTIFIER
+  EQUIPMENT
+  ANODE_BED
+}
+```
+
+### EventSeverity
+
+```graphql
+enum EventSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+```
+
+### QualityFlag
+
+```graphql
+enum QualityFlag {
+  GOOD
+  SUSPECT
+  BAD
+}
+```
+
+### MeasurementSource
+
+```graphql
+enum MeasurementSource {
+  MANUAL
+  AUTOMATED
+  IMPORT
+  CALCULATED
+}
+```
+
+### WorkOrderStatus
+
+```graphql
+enum WorkOrderStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+```
+
+### FailureType
+
+```graphql
+enum FailureType {
+  COMPLETE
+  DEGRADED
+  INTERMITTENT
+}
+```
+
+### ConflictResolution
+
+```graphql
+enum ConflictResolution {
+  SKIP
+  UPDATE
+  CREATE_NEW
+}
+```
+
+## Object Types
+
+### Asset
+
+```graphql
+type Asset {
+  id: UUID!
+  tenantId: UUID!
+  name: String!
+  assetType: AssetType!
+  externalId: String
+  parentId: UUID
+  geometry: GeoJSON
+  attributes: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Relationships
+  parent: Asset
+  children: [Asset!]!
+  measurements(limit: Int): [Measurement!]!
+  events(limit: Int): [Event!]!
+  riskScore: Float
+}
+```
+
+### Measurement
+
+```graphql
+type Measurement {
+  id: UUID!
+  assetId: UUID!
+  assetType: AssetType!
+  measurementType: String!
+  value: Float!
+  unit: String!
+  recordedAt: DateTime!
+  recordedBy: UUID
+  source: MeasurementSource!
+  quality: QualityFlag!
+  metadata: JSON
+
+  # Relationships
+  asset: Asset!
+}
+```
+
+### Event
+
+```graphql
+type Event {
+  id: UUID!
+  assetId: UUID!
+  eventType: String!
+  severity: EventSeverity!
+  title: String!
+  description: String
+  occurredAt: DateTime!
+  resolvedAt: DateTime
+  acknowledgedAt: DateTime
+  acknowledgedBy: UUID
+  metadata: JSON
+
+  # Relationships
+  asset: Asset!
+}
+```
+
+### Pipeline
+
+```graphql
+type Pipeline {
+  id: UUID!
+  name: String!
+  operator: String
+  productType: String
+  geometry: GeoJSON
+  attributes: JSON
+
+  # Relationships
+  segments: [Segment!]!
+  totalMiles: Float
+  riskScore: Float
+}
+```
+
+### Segment
+
+```graphql
+type Segment {
+  id: UUID!
+  pipelineId: UUID!
+  name: String!
+  startMilePost: Float
+  endMilePost: Float
+  diameterInches: Float
+  wallThickness: Float
+  material: String
+  coatingType: String
+  installDate: Date
+  geometry: GeoJSON
+
+  # Relationships
+  pipeline: Pipeline!
+  testStations: [TestStation!]!
+  rectifiers: [Rectifier!]!
+  riskScore: Float
+}
+```
+
+### TestStation
+
+```graphql
+type TestStation {
+  id: UUID!
+  segmentId: UUID!
+  name: String!
+  stationType: String
+  milePost: Float
+  geometry: GeoJSON
+
+  # Relationships
+  segment: Segment!
+  lastReading: Measurement
+  readings(limit: Int): [Measurement!]!
+}
+```
+
+### Rectifier
+
+```graphql
+type Rectifier {
+  id: UUID!
+  segmentId: UUID!
+  name: String!
+  manufacturer: String
+  model: String
+  ratedOutputAmps: Float
+  ratedOutputVolts: Float
+  installDate: Date
+  geometry: GeoJSON
+
+  # Current readings
+  currentOutput: Float
+  voltageOutput: Float
+  status: String
+
+  # Relationships
+  segment: Segment!
+  protectedSegments: [Segment!]!
+}
+```
+
+### PipelineSummary
+
+```graphql
+type PipelineSummary {
+  totalAssets: Int!
+  totalPipelines: Int!
+  totalSegments: Int!
+  totalTestStations: Int!
+  totalRectifiers: Int!
+  assetsByType: [AssetCount!]!
+  recentEvents: [Event!]!
+  measurementStats: [MeasurementStats!]!
+}
+```
+
+### ImpactAnalysis
+
+```graphql
+type ImpactAnalysis {
+  affectedAssets: [AffectedAsset!]!
+  totalAffectedSegments: Int!
+  totalAffectedMiles: Float!
+  estimatedRepairTime: String
+  recommendations: [String!]!
+}
+```
+
+### RelationshipGraph
+
+```graphql
+type RelationshipGraph {
+  nodes: [GraphNode!]!
+  edges: [GraphEdge!]!
+}
+
+type GraphNode {
+  id: UUID!
+  name: String!
+  assetType: AssetType!
+  riskScore: Float
+}
+
+type GraphEdge {
+  source: UUID!
+  target: UUID!
+  relationshipType: String!
+}
+```
+
+## Input Types
+
+### CreateAssetInput
+
+```graphql
+input CreateAssetInput {
+  name: String!
+  assetType: AssetType!
+  externalId: String
+  parentId: UUID
+  segmentId: UUID
+  geometry: GeoJSONInput
+  attributes: JSON
+}
+```
+
+### UpdateAssetInput
+
+```graphql
+input UpdateAssetInput {
+  name: String
+  externalId: String
+  geometry: GeoJSONInput
+  attributes: JSON
+}
+```
+
+### RecordMeasurementInput
+
+```graphql
+input RecordMeasurementInput {
+  assetId: UUID!
+  measurementType: String!
+  value: Float!
+  unit: String!
+  recordedAt: DateTime
+  source: MeasurementSource
+  quality: QualityFlag
+  metadata: JSON
+}
+```
+
+### CreateEventInput
+
+```graphql
+input CreateEventInput {
+  assetId: UUID!
+  eventType: String!
+  severity: EventSeverity!
+  title: String!
+  description: String
+  occurredAt: DateTime
+  metadata: JSON
+}
+```
+
+### StartImportInput
+
+```graphql
+input StartImportInput {
+  sourceType: ImportSourceType!
+  sourceUrl: String
+  fileId: UUID
+  targetAssetType: AssetType!
+  fieldMapping: JSON!
+  conflictResolution: ConflictResolution!
+  syncSchedule: String
+}
+```
+
+## Scalar Types
+
+```graphql
+# Universally unique identifier
+scalar UUID
+
+# ISO 8601 date-time string
+scalar DateTime
+
+# ISO 8601 date string
+scalar Date
+
+# Arbitrary JSON object
+scalar JSON
+
+# GeoJSON geometry object
+scalar GeoJSON
+```
+
+### GeoJSON Examples
+
+**Point:**
+```json
+{
+  "type": "Point",
+  "coordinates": [-97.123, 32.456]
+}
+```
+
+**LineString:**
+```json
+{
+  "type": "LineString",
+  "coordinates": [
+    [-97.123, 32.456],
+    [-97.234, 32.567],
+    [-97.345, 32.678]
+  ]
+}
+```

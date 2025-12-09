@@ -1,0 +1,253 @@
+---
+title: "Data Model"
+description: "CorrData's asset hierarchy and relationship model"
+---
+
+## Asset Hierarchy
+
+CorrData organizes pipeline assets in a hierarchical structure:
+
+```
+Tenant
+└── Pipeline
+    └── Segment
+        ├── Test Station
+        ├── Rectifier
+        └── Equipment
+```
+
+## Core Entities
+
+### Tenant
+
+The top-level isolation boundary. Each operator has their own tenant with complete data separation.
+
+```python
+class Tenant:
+    id: UUID
+    name: str
+    domain: str
+    settings: dict
+    created_at: datetime
+```
+
+### Pipeline
+
+A named pipeline system operated by the tenant.
+
+```python
+class Pipeline:
+    id: UUID
+    tenant_id: UUID
+    name: str
+    external_id: str  # GIS system reference
+    operator: str
+    product_type: str  # gas, oil, water
+    geometry: LineString  # PostGIS geometry
+    attributes: dict
+```
+
+### Segment
+
+A section of pipeline with consistent characteristics.
+
+```python
+class Segment:
+    id: UUID
+    pipeline_id: UUID
+    name: str
+    external_id: str
+    start_mp: float  # Mile post start
+    end_mp: float    # Mile post end
+    diameter_inches: float
+    wall_thickness: float
+    material: str
+    coating_type: str
+    install_date: date
+    geometry: LineString
+    attributes: dict
+```
+
+### Test Station
+
+A monitoring point for cathodic protection readings.
+
+```python
+class TestStation:
+    id: UUID
+    segment_id: UUID
+    name: str
+    external_id: str
+    station_type: str  # standard, reference, gradient
+    mile_post: float
+    geometry: Point
+    attributes: dict
+```
+
+### Rectifier
+
+Equipment that provides cathodic protection current.
+
+```python
+class Rectifier:
+    id: UUID
+    segment_id: UUID
+    name: str
+    external_id: str
+    manufacturer: str
+    model: str
+    rated_output_amps: float
+    rated_output_volts: float
+    install_date: date
+    geometry: Point
+    attributes: dict
+```
+
+## Measurement Model
+
+### Time-Series Data
+
+Measurements are stored in TimescaleDB hypertables for efficient time-series queries.
+
+```python
+class Measurement:
+    id: UUID
+    asset_id: UUID
+    asset_type: str
+    measurement_type: str
+    value: float
+    unit: str
+    recorded_at: datetime
+    recorded_by: UUID
+    source: str  # manual, automated, import
+    quality: str  # good, suspect, bad
+    metadata: dict
+```
+
+### Measurement Types
+
+| Type | Unit | Description |
+|------|------|-------------|
+| `pipe_to_soil_potential` | mV | P/S potential reading |
+| `rectifier_current` | A | Rectifier output current |
+| `rectifier_voltage` | V | Rectifier output voltage |
+| `ac_voltage` | V | AC interference voltage |
+| `soil_resistivity` | ohm-cm | Soil resistivity |
+| `coating_resistance` | ohm/ft² | Coating resistance |
+
+## Relationship Model
+
+CorrData uses Neo4j to model complex relationships between assets.
+
+### Relationship Types
+
+```cypher
+// Protection relationship
+(rectifier:Asset)-[:PROTECTS]->(segment:Asset)
+
+// Monitoring relationship
+(test_station:Asset)-[:MONITORS]->(segment:Asset)
+
+// Location relationship
+(segment:Asset)-[:PART_OF]->(pipeline:Asset)
+
+// Interference relationship
+(segment:Asset)-[:INTERFERES_WITH]->(other_segment:Asset)
+```
+
+### Graph Queries
+
+**Find all assets protecting a segment:**
+
+```cypher
+MATCH (a:Asset)-[:PROTECTS]->(s:Asset {id: $segment_id})
+RETURN a
+```
+
+**Find cascade impact of rectifier failure:**
+
+```cypher
+MATCH (r:Asset {id: $rectifier_id})-[:PROTECTS*1..3]->(affected:Asset)
+RETURN affected
+```
+
+## Event Model
+
+### Event Types
+
+```python
+class Event:
+    id: UUID
+    asset_id: UUID
+    event_type: str
+    severity: str  # info, warning, critical
+    title: str
+    description: str
+    occurred_at: datetime
+    resolved_at: datetime
+    metadata: dict
+```
+
+| Event Type | Description |
+|------------|-------------|
+| `threshold_violation` | Measurement outside acceptable range |
+| `anomaly_detected` | Unusual pattern detected by analytics |
+| `equipment_alarm` | Equipment reported an alarm condition |
+| `compliance_deadline` | Upcoming or missed compliance deadline |
+| `maintenance_due` | Scheduled maintenance approaching |
+
+## External Corrosion Factors
+
+CorrData models external corrosion risk factors that affect pipeline integrity.
+
+### Soil Chemistry
+
+```python
+class SoilChemistry:
+    asset_id: UUID
+    ph: float
+    chloride_ppm: float
+    sulfate_ppm: float
+    resistivity: float
+    moisture_percent: float
+    redox_potential: float
+    sample_date: date
+    sample_location: Point
+```
+
+### Geology
+
+```python
+class GeologyFactor:
+    asset_id: UUID
+    soil_type: str
+    corrosivity_class: str
+    drainage_rating: str
+    rock_presence: bool
+    groundwater_depth: float
+```
+
+### Interference
+
+```python
+class InterferenceFactor:
+    asset_id: UUID
+    interference_type: str  # AC, DC, telluric
+    source_description: str
+    distance_to_source: float
+    measured_current: float
+    mitigation_installed: bool
+```
+
+## Data Retention
+
+| Data Type | Retention | Archive |
+|-----------|-----------|---------|
+| Asset Metadata | Forever | N/A |
+| Measurements | 7 years online | Cold storage |
+| Events | 3 years online | Cold storage |
+| Audit Logs | 10 years | Compliance archive |
+
+<Info>
+  Retention periods are configurable per tenant to meet specific regulatory requirements.
+</Info>

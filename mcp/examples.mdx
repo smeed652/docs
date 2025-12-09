@@ -1,0 +1,139 @@
+---
+title: "MCP Examples"
+description: "Real-world examples of using the CorrData MCP server"
+---
+
+## Daily Operations
+
+### Morning System Check
+
+Ask Claude to provide a morning briefing:
+
+```
+"Give me a morning briefing on the pipeline system.
+Include any overnight alerts, rectifiers needing attention,
+and upcoming compliance deadlines."
+```
+
+Claude will use `get_pipeline_summary`, `search_assets`, and compliance tools to generate a comprehensive report.
+
+### Finding Problem Areas
+
+```
+"Find all test stations that have had readings below -850mV
+in the last 7 days and show me which rectifiers protect them."
+```
+
+This combines `query_measurements`, `search_assets`, and `find_protection_systems`.
+
+## Risk Analysis
+
+### Impact Assessment
+
+```
+"If rectifier R-2145 goes offline, what segments would be affected
+and what's the current risk level of each?"
+```
+
+```
+"Analyze the potential impact of a power outage at the
+Northern substation on our CP systems."
+```
+
+### Trend Analysis
+
+```
+"Show me the pipe-to-soil potential trends for segment S-1001
+over the last 90 days. Are there any concerning patterns?"
+```
+
+## Compliance
+
+### Compliance Status Check
+
+```
+"What's our current compliance status for 49 CFR 192.465?
+Are there any test stations overdue for readings?"
+```
+
+### Audit Preparation
+
+```
+"Generate a summary of all CP activities for Q4 2024
+that I can use for the upcoming PHMSA audit."
+```
+
+## Reporting
+
+### Executive Summary
+
+```
+"Create an executive summary of our pipeline integrity program
+for the board meeting. Include key metrics, recent improvements,
+and any areas of concern."
+```
+
+### Technician Briefing
+
+```
+"What work should be prioritized for the field team today?
+Focus on safety-critical items and upcoming compliance deadlines."
+```
+
+## Advanced Workflows
+
+### Multi-Step Analysis
+
+Here's an example of a complex analysis workflow:
+
+1. **Identify the scope**: "Show me all pipelines in the Eastern region"
+2. **Find issues**: "Which of these have had below-threshold readings?"
+3. **Analyze impact**: "For the affected segments, what's the business impact if corrosion accelerates?"
+4. **Recommend action**: "Based on this analysis, what should be our remediation priority?"
+
+### Integration with Other Tools
+
+Combine CorrData data with other MCP servers:
+
+```
+"Use the CorrData data to identify high-risk segments,
+then use the calendar tool to schedule inspections
+and the email tool to notify the field team."
+```
+
+## Sample Conversations
+
+<Accordion title="Rectifier Troubleshooting">
+**User**: "Rectifier R-3001 is showing reduced output. What's going on?"
+
+**Claude**: Let me investigate R-3001...
+- Current output: 2.3A (normal range: 4-6A)
+- Last maintenance: 45 days ago
+- Connected test stations: 4 (TS-401, TS-402, TS-403, TS-404)
+- Recent P/S readings at connected stations are trending toward -750mV
+
+**Recommendation**: This appears to be a rectifier issue, not a demand increase. Suggest dispatching a technician to check:
+1. AC input voltage
+2. Rectifier tap settings
+3. Cable connections
+
+Would you like me to generate a work order?
+</Accordion>
+
+<Accordion title="Compliance Deadline Alert">
+**User**: "What compliance deadlines do we have coming up?"
+
+**Claude**: I found the following upcoming deadlines:
+
+| Deadline | Requirement | Items Due | Status |
+|----------|-------------|-----------|--------|
+| Dec 15, 2024 | 49 CFR 192.465 | 12 test stations | 8 complete, 4 pending |
+| Dec 31, 2024 | Annual rectifier inspection | 3 rectifiers | Not started |
+| Jan 15, 2025 | 49 CFR 192.463 | Interference survey | Scheduled |
+
+**Priority Actions**:
+1. Complete the 4 pending test station reads this week
+2. Schedule rectifier inspections before holiday shutdown
+
+Would you like me to create tasks for these items?
+</Accordion>

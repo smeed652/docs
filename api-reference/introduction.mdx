@@ -1,33 +1,120 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Introduction"
+description: "Getting started with the CorrData API"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+CorrData provides a GraphQL API for accessing pipeline integrity data. The API supports:
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+- **Queries** - Read operations for assets, measurements, and analytics
+- **Mutations** - Write operations for creating and updating data
+- **Subscriptions** - Real-time updates via WebSocket
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Base URL
 
-## Authentication
+```
+Production:  https://api.corrdata.io/graphql
+Staging:     https://api.staging.corrdata.io/graphql
+```
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+## GraphQL Playground
+
+Explore the API interactively at:
+
+```
+https://api.corrdata.io/graphql/playground
+```
+
+## Quick Example
+
+```graphql
+query GetPipelineSummary {
+  pipelineSummary {
+    totalAssets
+    totalPipelines
+    totalSegments
+    recentEvents {
+      id
+      title
+      severity
+      occurredAt
+    }
+  }
+}
+```
+
+## Response Format
+
+All responses follow a standard format:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "data": {
+    "pipelineSummary": {
+      "totalAssets": 1234,
+      "totalPipelines": 5,
+      "totalSegments": 45
+    }
   }
-]
+}
 ```
+
+### Error Responses
+
+```json
+{
+  "errors": [
+    {
+      "message": "Asset not found",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["asset"],
+      "extensions": {
+        "code": "NOT_FOUND"
+      }
+    }
+  ]
+}
+```
+
+## Rate Limits
+
+| Plan | Requests/min | Requests/day |
+|------|--------------|--------------|
+| Free | 60 | 1,000 |
+| Pro | 300 | 50,000 |
+| Enterprise | Unlimited | Unlimited |
+
+<Info>
+  Rate limit headers are included in all responses:
+  - `X-RateLimit-Limit`
+  - `X-RateLimit-Remaining`
+  - `X-RateLimit-Reset`
+</Info>
+
+## SDKs
+
+Official client libraries are available:
+
+<CardGroup cols={3}>
+  <Card title="Python" icon="python" href="https://github.com/corrdata/corrdata-python">
+    `pip install corrdata`
+  </Card>
+  <Card title="JavaScript" icon="js" href="https://github.com/corrdata/corrdata-js">
+    `npm install @corrdata/sdk`
+  </Card>
+  <Card title="REST Wrapper" icon="code" href="/api-reference/rest">
+    REST endpoints for simple integrations
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api-reference/authentication">
+    Set up API authentication
+  </Card>
+  <Card title="GraphQL Queries" icon="magnifying-glass" href="/api-reference/graphql/queries">
+    Explore available queries
+  </Card>
+</CardGroup>

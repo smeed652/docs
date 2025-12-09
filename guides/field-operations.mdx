@@ -1,0 +1,109 @@
+---
+title: "Field Operations"
+description: "Mobile app for field technicians with offline support"
+---
+
+## Mobile PWA
+
+CorrData's field operations app is a Progressive Web App (PWA) that works on any device:
+
+- **iOS** - Safari, Chrome
+- **Android** - Chrome, Firefox
+- **Tablets** - Full feature support
+- **Desktop** - Browser-based access
+
+## Key Features
+
+### Offline Support
+
+Work without connectivity:
+- Cache assets and work orders before heading to field
+- Record readings and notes offline
+- Auto-sync when connection restored
+- Conflict resolution for simultaneous edits
+
+### GPS Integration
+
+- Navigate to assets using device GPS
+- Auto-record location with readings
+- Track technician routes
+- Geofence-based task assignments
+
+### Measurement Recording
+
+Record CP measurements in the field:
+
+```
+┌─────────────────────────────────────────┐
+│ Test Station: TS-1234                   │
+│ Location: MP 12.5, Northern Pipeline    │
+├─────────────────────────────────────────┤
+│ P/S Potential:  [-0.923] V              │
+│ Reference:      [Cu-CuSO4 ▼]            │
+│ IR Drop:        [    12] mV             │
+│                                         │
+│ Notes:                                  │
+│ ┌─────────────────────────────────────┐ │
+│ │ Ground was wet from recent rain    │ │
+│ └─────────────────────────────────────┘ │
+│                                         │
+│         [ Save Reading ]                │
+└─────────────────────────────────────────┘
+```
+
+### Work Order Management
+
+- View assigned work orders
+- Update status in real-time
+- Attach photos and documents
+- Record time and materials
+
+## Workflow
+
+<Steps>
+  <Step title="Sync Before Field">
+    Download assigned tasks and asset data before leaving office.
+  </Step>
+  <Step title="Navigate to Asset">
+    Use GPS to find test stations and equipment.
+  </Step>
+  <Step title="Record Data">
+    Enter readings, photos, and notes.
+  </Step>
+  <Step title="Complete Tasks">
+    Mark work orders complete with documentation.
+  </Step>
+  <Step title="Sync After Field">
+    Upload all data when back in connectivity.
+  </Step>
+</Steps>
+
+## Installation
+
+### Add to Home Screen
+
+1. Open the app URL in your mobile browser
+2. Tap the share/menu button
+3. Select "Add to Home Screen"
+4. The app icon appears on your device
+
+<Info>
+  PWA installation gives you an app-like experience without app store downloads.
+</Info>
+
+## Data Management
+
+### Cache Size
+
+The app caches approximately:
+- 1,000 assets: ~5 MB
+- 10,000 measurements: ~20 MB
+- Photos: As captured
+
+### Sync Priority
+
+When syncing, data is prioritized:
+1. Compliance readings (safety-critical)
+2. Work order updates
+3. Photos and attachments
+4. Background data refresh

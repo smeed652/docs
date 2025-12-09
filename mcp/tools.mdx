@@ -1,0 +1,150 @@
+---
+title: "MCP Tools"
+description: "Complete reference of available MCP tools for CorrData"
+---
+
+## Asset Tools
+
+### get_asset_status
+
+Get the current status of any asset in the CorrData system.
+
+```typescript
+get_asset_status({
+  asset_uuid: string,           // UUID of the asset
+  include_measurements?: boolean, // Include recent measurements (default: true)
+  include_events?: boolean       // Include recent events (default: true)
+})
+```
+
+**Example:**
+```
+"Get the status of asset 550e8400-e29b-41d4-a716-446655440000"
+```
+
+### search_assets
+
+Search for assets matching specified criteria.
+
+```typescript
+search_assets({
+  asset_type?: string,          // pipeline, segment, test_station, rectifier
+  name_contains?: string,       // Filter by name
+  has_recent_events?: boolean,  // Only assets with events in last 30 days
+  limit?: number                // Max results (default: 50)
+})
+```
+
+**Example:**
+```
+"Find all rectifiers with recent events"
+```
+
+## Measurement Tools
+
+### query_measurements
+
+Query time-series measurements for an asset.
+
+```typescript
+query_measurements({
+  asset_uuid: string,
+  measurement_type?: string,    // pipe_to_soil_potential, rectifier_current, etc.
+  start_time?: string,          // ISO 8601 format
+  end_time?: string,            // ISO 8601 format
+  limit?: number                // Max results (default: 100)
+})
+```
+
+**Example:**
+```
+"Get pipe-to-soil readings for the last 30 days for test station TS-001"
+```
+
+## Analysis Tools
+
+### analyze_impact
+
+Analyze the cascading impact if an asset fails.
+
+```typescript
+analyze_impact({
+  asset_uuid: string,
+  failure_type?: string         // complete, degraded, intermittent (default: complete)
+})
+```
+
+**Example:**
+```
+"What would happen if rectifier R-005 failed completely?"
+```
+
+### find_protection_systems
+
+Find all cathodic protection systems protecting a pipeline segment.
+
+```typescript
+find_protection_systems({
+  asset_uuid: string            // UUID of the pipeline or segment
+})
+```
+
+**Example:**
+```
+"What CP systems protect segment S-1234?"
+```
+
+## System Tools
+
+### get_pipeline_summary
+
+Get a summary of the entire pipeline system.
+
+```typescript
+get_pipeline_summary()
+```
+
+Returns asset counts, recent events, and measurement statistics.
+
+**Example:**
+```
+"Give me an overview of the pipeline system"
+```
+
+### get_relationship_graph
+
+Get graph data showing relationships around an asset.
+
+```typescript
+get_relationship_graph({
+  asset_uuid: string,
+  depth?: number                // Relationship hops (default: 2, max: 4)
+})
+```
+
+**Example:**
+```
+"Show me all assets connected to pipeline P-001"
+```
+
+## Tool Categories Summary
+
+| Category | Tools | Description |
+|----------|-------|-------------|
+| **Assets** | `get_asset_status`, `search_assets` | Query and search pipeline assets |
+| **Measurements** | `query_measurements` | Access time-series data |
+| **Analysis** | `analyze_impact`, `find_protection_systems` | Risk and dependency analysis |
+| **System** | `get_pipeline_summary`, `get_relationship_graph` | System-wide views |
+
+## Best Practices
+
+<Tip>
+  When working with the MCP server, you can combine multiple tools in a single conversation to build comprehensive analyses.
+</Tip>
+
+**Effective prompts:**
+
+1. Start broad: "Give me an overview of the pipeline system"
+2. Drill down: "Show me assets with recent alerts"
+3. Analyze: "What's the risk if rectifier R-005 fails?"
+4. Act: "Generate a work order for the affected test stations"

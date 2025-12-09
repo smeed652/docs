@@ -1,97 +1,93 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "CorrData Documentation"
+description: "AI-powered pipeline integrity management platform with MCP server integration"
 ---
 
-## Setting up
+## Welcome to CorrData
 
-Get your documentation site up and running in minutes.
+CorrData is a comprehensive pipeline integrity management platform that combines cathodic protection monitoring, risk assessment, and compliance tracking with modern AI capabilities.
 
 <Card
-  title="Start here"
+  title="Get Started"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Set up CorrData and start monitoring your pipeline assets in minutes.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Core Features
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Asset Management"
+    icon="sitemap"
+    href="/guides/data-import"
   >
-    Edit your docs locally and preview them in real time.
+    Track pipelines, test stations, rectifiers, and equipment with complete GIS integration.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="CP Monitoring"
+    icon="bolt"
+    href="/guides/risk-scoring"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Monitor cathodic protection with pipe-to-soil readings, rectifier data, and automated alerts.
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
+    title="Compliance Tracking"
+    icon="shield-check"
+    href="/guides/compliance"
+  >
+    Stay compliant with 49 CFR 192/195 requirements and automated PHMSA reporting.
+  </Card>
+  <Card
+    title="Field Operations"
+    icon="mobile"
+    href="/guides/field-operations"
+  >
+    Mobile-first PWA for field technicians with offline support and GPS integration.
+  </Card>
+</Columns>
+
+## Developer Tools
+
+<Columns cols={2}>
+  <Card
+    title="GraphQL API"
+    icon="code"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Full-featured GraphQL API for integrations and custom workflows.
+  </Card>
+  <Card
+    title="MCP Server"
+    icon="robot"
+    href="/mcp/overview"
+  >
+    Native Model Context Protocol integration for AI assistants like Claude.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Why CorrData?
 
-Everything you need to create world-class documentation.
+| Feature | CorrData | Traditional CIMS |
+|---------|----------|------------------|
+| **AI Integration** | Native MCP server | None |
+| **API** | Modern GraphQL | Legacy REST/SOAP |
+| **Mobile** | Offline-first PWA | Limited or none |
+| **Deployment** | Cloud-native | On-premise only |
+| **Risk Scoring** | ML-powered | Manual calculations |
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Quick Links
 
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="terminal" href="/api-reference/introduction">
+    Explore the GraphQL API
+  </Card>
+  <Card title="MCP Tools" icon="wrench" href="/mcp/tools">
+    Available MCP tools
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/architecture/overview">
+    System design & data model
+  </Card>
+</CardGroup>

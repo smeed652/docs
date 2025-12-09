@@ -1,0 +1,113 @@
+---
+title: "MCP Server Overview"
+description: "Integrate CorrData with AI assistants using the Model Context Protocol"
+---
+
+## What is MCP?
+
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open standard that enables AI assistants to securely access external data and tools. CorrData's MCP server allows AI assistants like Claude to:
+
+- Query pipeline assets and measurements
+- Analyze risk scores and compliance status
+- Generate reports and recommendations
+- Access real-time CP monitoring data
+
+<Info>
+  CorrData's MCP server is built on Anthropic's official MCP specification, ensuring compatibility with Claude and other MCP-enabled assistants.
+</Info>
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     AI Assistant (Claude)                    │
+└────────────────────────────┬────────────────────────────────┘
+                             │ MCP Protocol
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    CorrData MCP Server                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │   Tools     │  │  Resources  │  │   Prompts   │         │
+│  │             │  │             │  │             │         │
+│  │ get_asset   │  │ pipelines   │  │ compliance  │         │
+│  │ query_      │  │ test_       │  │ risk_       │         │
+│  │ measurements│  │ stations    │  │ assessment  │         │
+│  │ analyze_    │  │ rectifiers  │  │             │         │
+│  │ impact      │  │             │  │             │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+└────────────────────────────┬────────────────────────────────┘
+                             │ GraphQL
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     CorrData API                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="Natural Language Queries" icon="comments">
+    Ask questions like "What's the risk score for the Northern Pipeline?" and get instant answers.
+  </Card>
+  <Card title="Contextual Recommendations" icon="lightbulb">
+    AI can analyze data and provide actionable recommendations based on your pipeline data.
+  </Card>
+  <Card title="Compliance Assistance" icon="shield-check">
+    Get help understanding PHMSA requirements and identifying compliance gaps.
+  </Card>
+  <Card title="Secure Access" icon="lock">
+    All data access is authenticated and scoped to your organization's permissions.
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### 1. Install the MCP Server
+
+```bash
+pip install corrdata-mcp
+# or
+uvx corrdata-mcp
+```
+
+### 2. Configure Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "corrdata": {
+      "command": "uvx",
+      "args": ["corrdata-mcp"],
+      "env": {
+        "CORRDATA_API_URL": "https://api.corrdata.com/graphql",
+        "CORRDATA_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### 3. Start Using
+
+Once configured, you can ask Claude questions like:
+
+- "Show me all rectifiers with below-threshold output"
+- "What's the compliance status for the Eastern Region?"
+- "Analyze the risk factors for segment S-1234"
+- "Generate a monthly CP summary report"
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Available Tools" icon="wrench" href="/mcp/tools">
+    Explore all MCP tools
+  </Card>
+  <Card title="Configuration" icon="gear" href="/mcp/configuration">
+    Advanced configuration options
+  </Card>
+  <Card title="Examples" icon="code" href="/mcp/examples">
+    Usage examples and recipes
+  </Card>
+</CardGroup>

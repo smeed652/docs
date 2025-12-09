@@ -1,0 +1,183 @@
+---
+title: "Authentication"
+description: "Authenticate with the CorrData API"
+---
+
+## Authentication Methods
+
+CorrData supports two authentication methods:
+
+1. **API Keys** - For server-to-server integrations
+2. **JWT Tokens** - For user-based authentication
+
+## API Keys
+
+### Creating an API Key
+
+1. Log in to the CorrData dashboard
+2. Navigate to **Settings** > **API Keys**
+3. Click **Create API Key**
+4. Copy the key (it won't be shown again)
+
+### Using API Keys
+
+Include the API key in the `Authorization` header:
+
+```bash
+curl -X POST https://api.corrdata.io/graphql \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ pipelineSummary { totalAssets } }"}'
+```
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    import requests
+
+    headers = {
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    }
+
+    query = """
+    query {
+        pipelineSummary {
+            totalAssets
+        }
+    }
+    """
+
+    response = requests.post(
+        "https://api.corrdata.io/graphql",
+        headers=headers,
+        json={"query": query}
+    )
+    ```
+  </Tab>
+  <Tab title="JavaScript">
+    ```javascript
+    const response = await fetch('https://api.corrdata.io/graphql', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          query {
+            pipelineSummary {
+              totalAssets
+            }
+          }
+        `
+      })
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## JWT Authentication
+
+For user-based authentication, obtain a JWT token via the login endpoint.
+
+### Login
+
+```bash
+curl -X POST https://api.corrdata.io/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "your-password"}'
+```
+
+Response:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "expires_in": 3600
+}
+```
+
+### Using JWT Tokens
+
+```bash
+curl -X POST https://api.corrdata.io/graphql \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ me { id email } }"}'
+```
+
+### Refreshing Tokens
+
+```bash
+curl -X POST https://api.corrdata.io/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "eyJhbGciOiJIUzI1NiIs..."}'
+```
+
+## API Key Scopes
+
+API keys can be scoped to limit access:
+
+| Scope | Description |
+|-------|-------------|
+| `read:assets` | Read asset data |
+| `write:assets` | Create/update assets |
+| `read:measurements` | Read measurement data |
+| `write:measurements` | Create measurements |
+| `read:analytics` | Access analytics and risk scores |
+| `admin` | Full administrative access |
+
+### Checking Scopes
+
+The `/auth/introspect` endpoint returns key information:
+
+```bash
+curl -X GET https://api.corrdata.io/auth/introspect \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json
+{
+  "active": true,
+  "scopes": ["read:assets", "read:measurements"],
+  "tenant_id": "uuid",
+  "expires_at": "2025-12-31T23:59:59Z"
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  Never expose API keys in client-side code or public repositories.
+</Warning>
+
+### Recommendations
+
+1. **Rotate keys regularly** - Create new keys and deprecate old ones
+2. **Use minimal scopes** - Only request necessary permissions
+3. **Store securely** - Use environment variables or secret managers
+4. **Monitor usage** - Review API logs for suspicious activity
+
+### Environment Variables
+
+```bash
+# .env file (never commit!)
+CORRDATA_API_KEY=your_api_key_here
+```
+
+```python
+import os
+api_key = os.environ.get("CORRDATA_API_KEY")
+```
+
+## Troubleshooting
+
+### Common Errors
+
+| Error Code | Description | Solution |
+|------------|-------------|----------|
+| `401 Unauthorized` | Invalid or missing API key | Check your API key is correct |
+| `403 Forbidden` | Insufficient scopes | Request additional scopes |
+| `429 Too Many Requests` | Rate limit exceeded | Wait and retry with backoff |

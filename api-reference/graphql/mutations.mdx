@@ -1,0 +1,340 @@
+---
+title: "Mutations"
+description: "GraphQL mutations for writing to CorrData"
+---
+
+## Asset Mutations
+
+### Create Asset
+
+Create a new asset in the system.
+
+```graphql
+mutation CreateAsset($input: CreateAssetInput!) {
+  createAsset(input: $input) {
+    id
+    name
+    assetType
+    externalId
+    createdAt
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "input": {
+    "name": "Test Station TS-1234",
+    "assetType": "TEST_STATION",
+    "externalId": "GIS-TS-1234",
+    "segmentId": "550e8400-e29b-41d4-a716-446655440000",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-97.123, 32.456]
+    },
+    "attributes": {
+      "station_type": "standard",
+      "mile_post": 12.5
+    }
+  }
+}
+```
+
+### Update Asset
+
+Update an existing asset.
+
+```graphql
+mutation UpdateAsset($id: UUID!, $input: UpdateAssetInput!) {
+  updateAsset(id: $id, input: $input) {
+    id
+    name
+    attributes
+    updatedAt
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "input": {
+    "name": "Test Station TS-1234 (Updated)",
+    "attributes": {
+      "station_type": "reference",
+      "mile_post": 12.5
+    }
+  }
+}
+```
+
+### Delete Asset
+
+Remove an asset from the system.
+
+```graphql
+mutation DeleteAsset($id: UUID!) {
+  deleteAsset(id: $id) {
+    success
+    message
+  }
+}
+```
+
+<Warning>
+  Deleting an asset will also remove all associated measurements and events.
+</Warning>
+
+## Measurement Mutations
+
+### Record Measurement
+
+Record a new measurement for an asset.
+
+```graphql
+mutation RecordMeasurement($input: RecordMeasurementInput!) {
+  recordMeasurement(input: $input) {
+    id
+    assetId
+    measurementType
+    value
+    unit
+    recordedAt
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "input": {
+    "assetId": "550e8400-e29b-41d4-a716-446655440000",
+    "measurementType": "pipe_to_soil_potential",
+    "value": -0.923,
+    "unit": "V",
+    "recordedAt": "2024-12-08T10:30:00Z",
+    "source": "manual",
+    "metadata": {
+      "reference_electrode": "Cu-CuSO4",
+      "ir_drop_mv": 12
+    }
+  }
+}
+```
+
+### Batch Record Measurements
+
+Record multiple measurements at once (useful for mobile sync).
+
+```graphql
+mutation BatchRecordMeasurements($inputs: [RecordMeasurementInput!]!) {
+  batchRecordMeasurements(inputs: $inputs) {
+    successCount
+    failureCount
+    errors {
+      index
+      message
+    }
+    measurements {
+      id
+      assetId
+      measurementType
+      value
+    }
+  }
+}
+```
+
+### Update Measurement Quality
+
+Update the quality flag on a measurement.
+
+```graphql
+mutation UpdateMeasurementQuality($id: UUID!, $quality: QualityFlag!) {
+  updateMeasurementQuality(id: $id, quality: $quality) {
+    id
+    quality
+    updatedAt
+  }
+}
+```
+
+## Event Mutations
+
+### Create Event
+
+Create a new event.
+
+```graphql
+mutation CreateEvent($input: CreateEventInput!) {
+  createEvent(input: $input) {
+    id
+    assetId
+    eventType
+    severity
+    title
+    occurredAt
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "input": {
+    "assetId": "550e8400-e29b-41d4-a716-446655440000",
+    "eventType": "threshold_violation",
+    "severity": "warning",
+    "title": "P/S potential below threshold",
+    "description": "Reading of -0.723V is below the -0.850V threshold",
+    "occurredAt": "2024-12-08T10:30:00Z"
+  }
+}
+```
+
+### Resolve Event
+
+Mark an event as resolved.
+
+```graphql
+mutation ResolveEvent($id: UUID!, $resolution: String) {
+  resolveEvent(id: $id, resolution: $resolution) {
+    id
+    resolvedAt
+    resolution
+  }
+}
+```
+
+### Acknowledge Event
+
+Acknowledge an event without resolving it.
+
+```graphql
+mutation AcknowledgeEvent($id: UUID!, $acknowledgedBy: UUID!) {
+  acknowledgeEvent(id: $id, acknowledgedBy: $acknowledgedBy) {
+    id
+    acknowledgedAt
+    acknowledgedBy
+  }
+}
+```
+
+## Import Mutations
+
+### Start Import
+
+Initiate a data import job.
+
+```graphql
+mutation StartImport($input: StartImportInput!) {
+  startImport(input: $input) {
+    jobId
+    status
+    estimatedRecords
+  }
+}
+```
+
+**Input:**
+```json
+{
+  "input": {
+    "sourceType": "ARCGIS_FEATURE_SERVICE",
+    "sourceUrl": "https://services.arcgis.com/org/FeatureServer/0",
+    "targetAssetType": "SEGMENT",
+    "fieldMapping": {
+      "PIPE_NAME": "name",
+      "DIAMETER": "attributes.diameter_inches"
+    },
+    "conflictResolution": "UPDATE"
+  }
+}
+```
+
+### Cancel Import
+
+Cancel a running import job.
+
+```graphql
+mutation CancelImport($jobId: UUID!) {
+  cancelImport(jobId: $jobId) {
+    success
+    message
+  }
+}
+```
+
+## Work Order Mutations
+
+### Create Work Order
+
+Create a new work order.
+
+```graphql
+mutation CreateWorkOrder($input: CreateWorkOrderInput!) {
+  createWorkOrder(input: $input) {
+    id
+    title
+    status
+    priority
+    dueDate
+    assignedTo {
+      id
+      name
+    }
+  }
+}
+```
+
+### Update Work Order Status
+
+Update the status of a work order.
+
+```graphql
+mutation UpdateWorkOrderStatus(
+  $id: UUID!
+  $status: WorkOrderStatus!
+  $notes: String
+) {
+  updateWorkOrderStatus(id: $id, status: $status, notes: $notes) {
+    id
+    status
+    updatedAt
+  }
+}
+```
+
+## Error Handling
+
+Mutations return detailed error information:
+
+```graphql
+mutation CreateAsset($input: CreateAssetInput!) {
+  createAsset(input: $input) {
+    ... on Asset {
+      id
+      name
+    }
+    ... on ValidationError {
+      field
+      message
+    }
+    ... on NotFoundError {
+      entityType
+      entityId
+    }
+  }
+}
+```
+
+Common error codes:
+
+| Code | Description |
+|------|-------------|
+| `VALIDATION_ERROR` | Input validation failed |
+| `NOT_FOUND` | Referenced entity doesn't exist |
+| `DUPLICATE` | Entity with same external_id exists |
+| `UNAUTHORIZED` | Insufficient permissions |

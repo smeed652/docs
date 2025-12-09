@@ -1,80 +1,133 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get started with CorrData in under 5 minutes"
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, ensure you have:
 
-### Step 1: Set up your local environment
+- A CorrData account (contact sales@corrdata.com for access)
+- API credentials from the CorrData dashboard
+- Python 3.11+ or Node.js 18+ (for API integration)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+## Step 1: Access the Dashboard
 
-### Step 2: Deploy your changes
+<Steps>
+  <Step title="Login">
+    Navigate to [app.corrdata.com](https://app.corrdata.com) and sign in with your credentials.
+  </Step>
+  <Step title="Select Organization">
+    If you have access to multiple organizations, select the one you want to work with.
+  </Step>
+  <Step title="Explore Assets">
+    View your pipeline assets on the map or in the asset tree view.
+  </Step>
+</Steps>
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+## Step 2: Configure the MCP Server
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+CorrData includes a native MCP server for AI assistant integration. Add it to your Claude Code configuration:
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+```json claude_desktop_config.json
+{
+  "mcpServers": {
+    "corrdata": {
+      "command": "uvx",
+      "args": ["corrdata-mcp"],
+      "env": {
+        "CORRDATA_API_URL": "https://api.corrdata.com/graphql",
+        "CORRDATA_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
 
-### Step 3: Go live
+<Info>
+  The MCP server exposes pipeline data to AI assistants, enabling natural language queries about your assets.
+</Info>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Step 3: Make Your First API Call
 
-## Next steps
+<CodeGroup>
+```python Python
+import httpx
 
-Now that you have your docs running, explore these key features:
+client = httpx.Client(
+    base_url="https://api.corrdata.com",
+    headers={"Authorization": "Bearer YOUR_API_KEY"}
+)
+
+query = """
+query GetPipelines {
+  pipelines(first: 10) {
+    edges {
+      node {
+        uuid
+        name
+        status
+        riskScore
+      }
+    }
+  }
+}
+"""
+
+response = client.post("/graphql", json={"query": query})
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.corrdata.com/graphql', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    query: `
+      query GetPipelines {
+        pipelines(first: 10) {
+          edges {
+            node {
+              uuid
+              name
+              status
+              riskScore
+            }
+          }
+        }
+      }
+    `
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+```bash cURL
+curl -X POST https://api.corrdata.com/graphql \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ pipelines(first: 10) { edges { node { uuid name status riskScore } } } }"}'
+```
+</CodeGroup>
+
+## Next Steps
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Import Your Data" icon="upload" href="/guides/data-import">
+    Learn how to import assets from ArcGIS or Shapefiles
+  </Card>
+  <Card title="Set Up Compliance" icon="shield-check" href="/guides/compliance">
+    Configure PHMSA compliance tracking
+  </Card>
+  <Card title="Explore the API" icon="code" href="/api-reference/introduction">
+    Full GraphQL API documentation
+  </Card>
+  <Card title="MCP Tools" icon="robot" href="/mcp/tools">
+    See all available MCP tools
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

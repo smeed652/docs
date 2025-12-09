@@ -1,0 +1,355 @@
+---
+title: "Queries"
+description: "GraphQL queries for reading CorrData"
+---
+
+## Asset Queries
+
+### Get Single Asset
+
+Retrieve a single asset by ID.
+
+```graphql
+query GetAsset($id: UUID!) {
+  asset(id: $id) {
+    id
+    name
+    assetType
+    externalId
+    attributes
+    geometry {
+      type
+      coordinates
+    }
+    createdAt
+    updatedAt
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Search Assets
+
+Search for assets matching criteria.
+
+```graphql
+query SearchAssets(
+  $assetType: AssetType
+  $nameContains: String
+  $hasRecentEvents: Boolean
+  $limit: Int
+) {
+  searchAssets(
+    assetType: $assetType
+    nameContains: $nameContains
+    hasRecentEvents: $hasRecentEvents
+    limit: $limit
+  ) {
+    id
+    name
+    assetType
+    externalId
+    geometry {
+      type
+      coordinates
+    }
+  }
+}
+```
+
+**Example:**
+```json
+{
+  "assetType": "RECTIFIER",
+  "nameContains": "North",
+  "limit": 10
+}
+```
+
+### Get Asset Status
+
+Get detailed status including recent measurements and events.
+
+```graphql
+query GetAssetStatus($id: UUID!) {
+  assetStatus(id: $id) {
+    asset {
+      id
+      name
+      assetType
+    }
+    recentMeasurements {
+      measurementType
+      value
+      unit
+      recordedAt
+    }
+    recentEvents {
+      id
+      eventType
+      severity
+      title
+      occurredAt
+    }
+    riskScore
+    complianceStatus
+  }
+}
+```
+
+## Pipeline Queries
+
+### Pipeline Summary
+
+Get an overview of the entire pipeline system.
+
+```graphql
+query PipelineSummary {
+  pipelineSummary {
+    totalAssets
+    totalPipelines
+    totalSegments
+    totalTestStations
+    totalRectifiers
+    assetsByType {
+      assetType
+      count
+    }
+    recentEvents {
+      id
+      title
+      severity
+      occurredAt
+    }
+    measurementStats {
+      measurementType
+      avgValue
+      minValue
+      maxValue
+      count
+    }
+  }
+}
+```
+
+### List Pipelines
+
+Get all pipelines with their segments.
+
+```graphql
+query ListPipelines {
+  pipelines {
+    id
+    name
+    operator
+    productType
+    segments {
+      id
+      name
+      startMilePost
+      endMilePost
+      diameterInches
+    }
+  }
+}
+```
+
+## Measurement Queries
+
+### Query Measurements
+
+Get time-series measurements for an asset.
+
+```graphql
+query QueryMeasurements(
+  $assetId: UUID!
+  $measurementType: String
+  $startTime: DateTime
+  $endTime: DateTime
+  $limit: Int
+) {
+  measurements(
+    assetId: $assetId
+    measurementType: $measurementType
+    startTime: $startTime
+    endTime: $endTime
+    limit: $limit
+  ) {
+    id
+    measurementType
+    value
+    unit
+    recordedAt
+    recordedBy
+    source
+    quality
+  }
+}
+```
+
+**Example - Last 7 days of P/S readings:**
+```json
+{
+  "assetId": "550e8400-e29b-41d4-a716-446655440000",
+  "measurementType": "pipe_to_soil_potential",
+  "startTime": "2024-12-01T00:00:00Z",
+  "endTime": "2024-12-08T00:00:00Z",
+  "limit": 100
+}
+```
+
+### Measurement Trends
+
+Get aggregated measurement trends.
+
+```graphql
+query MeasurementTrends(
+  $assetId: UUID!
+  $measurementType: String!
+  $interval: String!
+  $startTime: DateTime!
+  $endTime: DateTime!
+) {
+  measurementTrends(
+    assetId: $assetId
+    measurementType: $measurementType
+    interval: $interval
+    startTime: $startTime
+    endTime: $endTime
+  ) {
+    timestamp
+    avgValue
+    minValue
+    maxValue
+    count
+  }
+}
+```
+
+## Relationship Queries
+
+### Find Protection Systems
+
+Find all CP systems protecting a segment.
+
+```graphql
+query FindProtectionSystems($assetId: UUID!) {
+  protectionSystems(assetId: $assetId) {
+    rectifiers {
+      id
+      name
+      currentOutput
+      voltageOutput
+      status
+    }
+    testStations {
+      id
+      name
+      lastReading {
+        value
+        recordedAt
+      }
+    }
+    anodeBeds {
+      id
+      name
+      anodeCount
+      installDate
+    }
+  }
+}
+```
+
+### Analyze Impact
+
+Analyze the impact of an asset failure.
+
+```graphql
+query AnalyzeImpact($assetId: UUID!, $failureType: FailureType) {
+  impactAnalysis(assetId: $assetId, failureType: $failureType) {
+    affectedAssets {
+      id
+      name
+      assetType
+      impactLevel
+    }
+    totalAffectedSegments
+    totalAffectedMiles
+    estimatedRepairTime
+    recommendations
+  }
+}
+```
+
+### Relationship Graph
+
+Get graph data for visualization.
+
+```graphql
+query RelationshipGraph($assetId: UUID!, $depth: Int) {
+  relationshipGraph(assetId: $assetId, depth: $depth) {
+    nodes {
+      id
+      name
+      assetType
+      riskScore
+    }
+    edges {
+      source
+      target
+      relationshipType
+    }
+  }
+}
+```
+
+## Compliance Queries
+
+### Compliance Status
+
+Get compliance status for regulations.
+
+```graphql
+query ComplianceStatus($regulation: String) {
+  complianceStatus(regulation: $regulation) {
+    regulation
+    status
+    dueItems
+    overdueItems
+    upcomingDeadlines {
+      assetId
+      assetName
+      deadline
+      requirement
+    }
+  }
+}
+```
+
+## Pagination
+
+All list queries support cursor-based pagination:
+
+```graphql
+query PaginatedAssets($first: Int, $after: String) {
+  assets(first: $first, after: $after) {
+    edges {
+      node {
+        id
+        name
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```

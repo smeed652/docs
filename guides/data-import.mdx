@@ -1,0 +1,110 @@
+---
+title: "Data Import"
+description: "Import pipeline assets from ArcGIS Feature Services or Shapefiles"
+---
+
+## Overview
+
+CorrData supports importing GIS data from multiple sources:
+
+- **ArcGIS Feature Services** - Connect directly to Esri services for live sync
+- **Shapefiles** - Upload ZIP files containing shapefile data
+
+## Import Wizard
+
+The Import Wizard guides you through the process:
+
+<Steps>
+  <Step title="Select Source">
+    Choose between ArcGIS Feature Service or Shapefile upload.
+  </Step>
+  <Step title="Connect or Upload">
+    Enter the service URL and credentials, or upload your shapefile.
+  </Step>
+  <Step title="Configure Mapping">
+    Map source fields to CorrData asset fields using auto-suggestions.
+  </Step>
+  <Step title="Set Options">
+    Choose target asset type, conflict resolution, and sync schedule.
+  </Step>
+  <Step title="Import">
+    Review and start the import process.
+  </Step>
+</Steps>
+
+## ArcGIS Feature Service
+
+### Supported Services
+
+- ArcGIS Online hosted services
+- ArcGIS Enterprise services
+- Public ArcGIS services
+
+### Authentication
+
+CorrData supports API key authentication for ArcGIS services:
+
+```json
+{
+  "url": "https://services.arcgis.com/org/FeatureServer",
+  "apiKey": "your-arcgis-api-key"
+}
+```
+
+### Sync Schedules
+
+| Schedule | Description |
+|----------|-------------|
+| Manual | Import only when triggered |
+| Daily | Sync once per day |
+| Weekly | Sync once per week |
+
+## Shapefile Import
+
+### Supported Formats
+
+Upload a ZIP file containing:
+- `.shp` - Shape file (required)
+- `.dbf` - Attribute database (required)
+- `.shx` - Shape index (required)
+- `.prj` - Projection file (recommended)
+
+### Coordinate Systems
+
+CorrData automatically transforms coordinates to WGS84 (EPSG:4326). Supported source CRS:
+
+- NAD83 (EPSG:4269)
+- NAD27 (EPSG:4267)
+- State Plane coordinate systems
+- UTM zones
+
+## Field Mapping
+
+### Auto-Suggestions
+
+CorrData uses fuzzy matching to suggest field mappings:
+
+| Source Field | Suggested Target | Confidence |
+|--------------|------------------|------------|
+| PIPE_NAME | name | 95% |
+| DIAMETER | attributes.diameter_inches | 80% |
+| MATERIAL | attributes.material_type | 85% |
+
+### Templates
+
+Pre-built templates for common schemas:
+
+- **Pipeline Default** - Standard pipeline fields
+- **Segment Default** - Segment-specific fields
+- **Test Station Default** - Test station fields
+- **Rectifier Default** - Rectifier fields
+
+## Conflict Resolution
+
+When importing records that may already exist:
+
+| Option | Behavior |
+|--------|----------|
+| Skip | Don't import if external_id exists |
+| Update | Update existing record with new data |
+| Create New | Always create a new record |
